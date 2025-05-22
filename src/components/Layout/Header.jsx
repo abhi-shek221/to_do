@@ -1,4 +1,3 @@
-// src/components/Layout/Header.jsx
 import React, { useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import TaskContext from "../../context/TaskContext";
@@ -23,37 +22,43 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white shadow-md p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-primary-dark">
-            {getPageTitle()}
-          </h1>
-          <p className="text-sm text-gray-600 italic bg-gray-100 p-2 mt-2 rounded xl w-full">
-            {getRandomQuote()}
-          </p>
-        </div>
+    <header className="bg-gradient-to-l from-gray-400 via-gray-600 to-blue-300 border-b border-gray-200 shadow-sm">
+      <div className="px-6 py-4">
+        <div className="flex justify-between items-center">
+          {/* Left side - Page title */}
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">
+              {getPageTitle()}
+            </h1>
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 rounded-r-lg px-4 py-2 max-w-2xl">
+              <p className="text-sm text-gray-700 italic">{getRandomQuote()}</p>
+            </div>
+          </div>
 
-        <div className="flex space-x-4">
-          {!(location.pathname === "/tasks/add") &&
-            !location.pathname.includes("/tasks/edit") && (
-              <Link
-                to="/tasks/add"
-                className="btn btn-primary flex items-center"
-              >
-                <span className="mr-1 text-lg">+</span> New Task
-              </Link>
-            )}
+          {/* Right side - Action buttons */}
+          <div className="flex space-x-3">
+            {!(location.pathname === "/tasks/add") &&
+              !location.pathname.includes("/tasks/edit") && (
+                <Link
+                  to="/tasks/add"
+                  className="flex items-center px-4 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-sm"
+                >
+                  <span className="mr-2 text-lg">+</span>
+                  New Task
+                </Link>
+              )}
 
-          {!(location.pathname === "/journal/add") &&
-            !location.pathname.includes("/journal/edit") && (
-              <Link
-                to="/journal/add"
-                className="btn btn-secondary flex items-center"
-              >
-                <span className="mr-1 text-lg">+</span> New Journal
-              </Link>
-            )}
+            {!(location.pathname === "/journal/add") &&
+              !location.pathname.includes("/journal/edit") && (
+                <Link
+                  to="/journal/add"
+                  className="flex items-center px-4 py-2 bg-pink-500 text-white font-medium rounded-lg hover:bg-pink-600 transition-colors duration-200 shadow-sm"
+                >
+                  <span className="mr-2 text-lg">+</span>
+                  New Journal
+                </Link>
+              )}
+          </div>
         </div>
       </div>
     </header>

@@ -157,12 +157,12 @@ const MotivationCard = () => {
   };
 
   return (
-    <div className="h-full flex flex-col justify-between p-6">
+    <div className="h-full flex flex-col justify-between p-6 bg-gradient-to-b from-pink-200 via-purple-200 to-indigo-200 rounded-lg">
       {/* Header with greeting */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-xl font-bold text-white">{getGreeting()}</h2>
-          <div className="text-sm text-white/80">
+          <h2 className="text-xl font-bold text-black">{getGreeting()}</h2>
+          <div className="text-sm text-black/80">
             {currentTime.toLocaleDateString("en-US", {
               weekday: "short",
               month: "short",
@@ -176,20 +176,20 @@ const MotivationCard = () => {
       <div className="flex-grow">
         {/* Quote section */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-white mb-3">
+          <h3 className="text-lg font-semibold text-black mb-3">
             💭 Daily Inspiration
           </h3>
-          <blockquote className="text-white/90 italic text-base leading-relaxed">
+          <blockquote className="text-black/90 italic text-base leading-relaxed">
             "{quote}"
           </blockquote>
         </div>
 
         {/* Motivation message */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-white mb-3">
+          <h3 className="text-lg font-semibold text-black mb-3">
             🎯 Your Progress
           </h3>
-          <p className="text-white/90 text-base leading-relaxed">
+          <p className="text-black/90 text-base leading-relaxed">
             {getMotivationMessage()}
           </p>
         </div>
@@ -198,22 +198,22 @@ const MotivationCard = () => {
         {stats.total > 0 && (
           <div className="mb-6">
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
-                <div className="text-2xl font-bold text-white">
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-black">
                   {stats.completed}
                 </div>
-                <div className="text-xs text-white/80 uppercase tracking-wide">
+                <div className="text-xs text-black/80 uppercase tracking-wide">
                   Completed
                 </div>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
-                <div className="text-2xl font-bold text-white">
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-black">
                   {stats.total > 0
                     ? Math.round((stats.completed / stats.total) * 100)
                     : 0}
                   %
                 </div>
-                <div className="text-xs text-white/80 uppercase tracking-wide">
+                <div className="text-xs text-black/80 uppercase tracking-wide">
                   Success Rate
                 </div>
               </div>
@@ -224,20 +224,20 @@ const MotivationCard = () => {
 
       {/* Footer with tip */}
       <div className="mt-6">
-        <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/20">
-          <h3 className="font-semibold text-white mb-2 flex items-center">
+        <div className="bg-white/20 backdrop-blur-sm p-4 rounded-lg border border-black/10">
+          <h3 className="font-semibold text-black mb-2 flex items-center">
             💡 Pro Tip
           </h3>
-          <p className="text-sm text-white/90 leading-relaxed">
+          <p className="text-sm text-black/90 leading-relaxed">
             {getProductivityTip()}
           </p>
         </div>
       </div>
 
       {/* Decorative elements */}
-      <div className="absolute top-4 right-4 opacity-20">
+      <div className="absolute top-4 right-4 opacity-40">
         <svg
-          className="w-8 h-8 text-white"
+          className="w-8 h-8 text-black"
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -251,7 +251,7 @@ const MotivationCard = () => {
 
       <div className="absolute bottom-4 left-4 opacity-10">
         <svg
-          className="w-6 h-6 text-white"
+          className="w-6 h-6 text-black"
           fill="currentColor"
           viewBox="0 0 20 20"
         >
