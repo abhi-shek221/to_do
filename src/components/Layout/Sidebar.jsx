@@ -182,52 +182,6 @@ const Sidebar = () => {
           ))}
         </ul>
       </nav>
-
-      {/* Bottom Section */}
-      <div className="absolute bottom-0 left-0 right-0 p-4">
-        {!isCollapsed && (
-          <div className="bg-blue-50 rounded-lg p-3 mb-4">
-            <h3 className="text-sm font-medium text-primary mb-1">
-              Need help?
-            </h3>
-            <p className="text-xs text-text-secondary mb-2">
-              Check out our documentation for usage tips and guides.
-            </p>
-            <a
-              href="#"
-              className="text-xs text-primary font-medium hover:underline"
-            >
-              View Documentation
-            </a>
-          </div>
-        )}
-        <div className="flex items-center">
-          {!isCollapsed && (
-            <div className="mr-3">
-              <p className="text-xs font-medium text-text-primary">
-                Task Tracker
-              </p>
-              <p className="text-xs text-text-secondary">v1.0.0</p>
-            </div>
-          )}
-          <button className="p-2 rounded-full bg-gray-100 hover:bg-gray-200">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 text-text-secondary"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
     </div>
   );
 };

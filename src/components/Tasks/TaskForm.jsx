@@ -20,6 +20,7 @@ const TaskForm = () => {
 
   const [errors, setErrors] = useState({});
   const [isUsingVoice, setIsUsingVoice] = useState(false);
+  const [activeVoiceField, setActiveVoiceField] = useState("description");
 
   // Load task data if editing
   useEffect(() => {
@@ -55,29 +56,98 @@ const TaskForm = () => {
   };
 
   const handleVoiceInput = (text) => {
-    // Simple logic to determine which field to update based on text content
-    if (
-      text.toLowerCase().includes("title") ||
-      text.toLowerCase().includes("name")
-    ) {
-      const nameMatch = text.match(
-        /title|name(.*?)(?:description|status|priority|due date|due|tags|$)/i
-      );
-      if (nameMatch && nameMatch[1]) {
-        const name = nameMatch[1].trim();
-        setFormData((prev) => ({ ...prev, name }));
-      }
-    } else if (text.toLowerCase().includes("description")) {
-      const descMatch = text.match(
-        /description(.*?)(?:status|priority|due date|due|tags|$)/i
-      );
-      if (descMatch && descMatch[1]) {
-        const description = descMatch[1].trim();
-        setFormData((prev) => ({ ...prev, description }));
-      }
+    if (!text || !text.trim()) return;
+
+    const cleanText = text.trim();
+
+    // Enhanced voice input processing with better field detection
+    if (activeVoiceField === "name") {
+      setFormData((prev) => ({ ...prev, name: cleanText }));
+    } else if (activeVoiceField === "description") {
+      setFormData((prev) => ({ ...prev, description: cleanText }));
     } else {
-      // Default to updating description if no specific field is mentioned
-      setFormData((prev) => ({ ...prev, description: text }));
+      // Smart field detection based on keywords
+      const lowerText = cleanText.toLowerCase();
+
+      if (
+        lowerText.includes("title") ||
+        lowerText.includes("name") ||
+        lowerText.includes("task name")
+      ) {
+        // Extract task name
+        const namePatterns = [
+          /(?:title|name|task name)(?:\s+is)?\s*[:.]?\s*(.+?)(?:\.|$)/i,
+          /^(.+?)(?:\s+(?:description|desc|details))/i,
+        ];
+
+        for (const pattern of namePatterns) {
+          const match = cleanText.match(pattern);
+          if (match && match[1]) {
+            setFormData((prev) => ({ ...prev, name: match[1].trim() }));
+            return;
+          }
+        }
+      }
+
+      if (
+        lowerText.includes("description") ||
+        lowerText.includes("details") ||
+        lowerText.includes("about")
+      ) {
+        // Extract description
+        const descPatterns = [
+          /(?:description|details|about)(?:\s+is)?\s*[:.]?\s*(.+)/i,
+          /^(.+?)(?:\s+(?:priority|status|due))/i,
+        ];
+
+        for (const pattern of descPatterns) {
+          const match = cleanText.match(pattern);
+          if (match && match[1]) {
+            setFormData((prev) => ({ ...prev, description: match[1].trim() }));
+            return;
+          }
+        }
+      }
+
+      if (lowerText.includes("priority")) {
+        // Extract priority
+        if (lowerText.includes("urgent")) {
+          setFormData((prev) => ({ ...prev, priority: "urgent" }));
+        } else if (lowerText.includes("high")) {
+          setFormData((prev) => ({ ...prev, priority: "high" }));
+        } else if (lowerText.includes("low")) {
+          setFormData((prev) => ({ ...prev, priority: "low" }));
+        } else if (lowerText.includes("medium")) {
+          setFormData((prev) => ({ ...prev, priority: "medium" }));
+        }
+        return;
+      }
+
+      if (lowerText.includes("status")) {
+        // Extract status
+        if (lowerText.includes("completed") || lowerText.includes("done")) {
+          setFormData((prev) => ({ ...prev, status: "completed" }));
+        } else if (
+          lowerText.includes("in progress") ||
+          lowerText.includes("working")
+        ) {
+          setFormData((prev) => ({ ...prev, status: "in_progress" }));
+        } else if (
+          lowerText.includes("paused") ||
+          lowerText.includes("on hold")
+        ) {
+          setFormData((prev) => ({ ...prev, status: "paused" }));
+        } else if (lowerText.includes("not started")) {
+          setFormData((prev) => ({ ...prev, status: "not_started" }));
+        }
+        return;
+      }
+
+      // Default to updating the active field or description
+      setFormData((prev) => ({
+        ...prev,
+        [activeVoiceField]: cleanText,
+      }));
     }
   };
 
@@ -86,6 +156,14 @@ const TaskForm = () => {
 
     if (!formData.name.trim()) {
       newErrors.name = "Task name is required";
+    }
+
+    if (formData.name.trim().length > 100) {
+      newErrors.name = "Task name must be less than 100 characters";
+    }
+
+    if (formData.description.length > 500) {
+      newErrors.description = "Description must be less than 500 characters";
     }
 
     setErrors(newErrors);
@@ -118,50 +196,90 @@ const TaskForm = () => {
       tags: tagsArray,
     };
 
-    if (id) {
-      updateTask(id, taskData);
-    } else {
-      addTask(taskData);
-    }
+    try {
+      if (id) {
+        updateTask(id, taskData);
+      } else {
+        addTask(taskData);
+      }
 
-    // Redirect to tasks list
-    navigate("/tasks");
+      // Redirect to tasks list
+      navigate("/tasks");
+    } catch (error) {
+      console.error("Error saving task:", error);
+      setErrors({ submit: "Error saving task. Please try again." });
+    }
   };
 
   return (
-    <div className="bg-background-paper rounded-lg shadow-card p-6 max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">
+    <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
+      <h2 className="text-2xl font-bold mb-6 text-gray-900">
         {id ? "Edit Task" : "Add New Task"}
       </h2>
+
+      {errors.submit && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-sm text-red-600">{errors.submit}</p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label
             htmlFor="name"
-            className="block text-sm font-medium text-text-primary mb-1"
+            className="block text-sm font-medium text-gray-700 mb-1"
           >
             Task Name*
           </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className={`w-full px-3 py-2 border ${
-              errors.name ? "border-red-500" : "border-gray-300"
-            } rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
-            placeholder="Enter task name"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className={`w-full px-3 py-2 border ${
+                errors.name ? "border-red-500" : "border-gray-300"
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+              placeholder="Enter task name"
+              maxLength={100}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setActiveVoiceField("name");
+                setIsUsingVoice(!isUsingVoice);
+              }}
+              className="absolute right-2 top-2 p-1 text-gray-400 hover:text-blue-500 transition-colors"
+              title="Use voice input for task name"
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                />
+              </svg>
+            </button>
+          </div>
           {errors.name && (
             <p className="mt-1 text-sm text-red-500">{errors.name}</p>
           )}
+          <p className="mt-1 text-xs text-gray-500">
+            {formData.name.length}/100 characters
+          </p>
         </div>
 
         <div className="mb-4">
           <label
             htmlFor="description"
-            className="block text-sm font-medium text-text-primary mb-1"
+            className="block text-sm font-medium text-gray-700 mb-1"
           >
             Description
           </label>
@@ -172,14 +290,25 @@ const TaskForm = () => {
               value={formData.description}
               onChange={handleChange}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className={`w-full px-3 py-2 border ${
+                errors.description ? "border-red-500" : "border-gray-300"
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical`}
               placeholder="Enter task description"
+              maxLength={500}
             ></textarea>
 
             <button
               type="button"
-              onClick={() => setIsUsingVoice(!isUsingVoice)}
-              className="absolute bottom-2 right-2 p-2 bg-primary text-white rounded-full hover:bg-primary-dark"
+              onClick={() => {
+                setActiveVoiceField("description");
+                setIsUsingVoice(!isUsingVoice);
+              }}
+              className={`absolute bottom-2 right-2 p-2 rounded-full transition-all duration-200 ${
+                isUsingVoice && activeVoiceField === "description"
+                  ? "bg-red-500 text-white"
+                  : "bg-blue-500 hover:bg-blue-600 text-white"
+              }`}
+              title="Use voice input for description"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -198,8 +327,40 @@ const TaskForm = () => {
             </button>
           </div>
 
+          {errors.description && (
+            <p className="mt-1 text-sm text-red-500">{errors.description}</p>
+          )}
+          <p className="mt-1 text-xs text-gray-500">
+            {formData.description.length}/500 characters
+          </p>
+
           {isUsingVoice && (
-            <div className="mt-2 p-3 bg-blue-50 rounded-md">
+            <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-md">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium text-blue-800">
+                  Voice Input for{" "}
+                  {activeVoiceField === "name" ? "Task Name" : "Description"}
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => setIsUsingVoice(false)}
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
               <VoiceInput onResult={handleVoiceInput} />
             </div>
           )}
@@ -209,7 +370,7 @@ const TaskForm = () => {
           <div>
             <label
               htmlFor="status"
-              className="block text-sm font-medium text-text-primary mb-1"
+              className="block text-sm font-medium text-gray-700 mb-1"
             >
               Status
             </label>
@@ -218,7 +379,7 @@ const TaskForm = () => {
               name="status"
               value={formData.status}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="not_started">Not Started</option>
               <option value="in_progress">In Progress</option>
@@ -230,7 +391,7 @@ const TaskForm = () => {
           <div>
             <label
               htmlFor="priority"
-              className="block text-sm font-medium text-text-primary mb-1"
+              className="block text-sm font-medium text-gray-700 mb-1"
             >
               Priority
             </label>
@@ -239,7 +400,7 @@ const TaskForm = () => {
               name="priority"
               value={formData.priority}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -253,7 +414,7 @@ const TaskForm = () => {
           <div>
             <label
               htmlFor="dueDate"
-              className="block text-sm font-medium text-text-primary mb-1"
+              className="block text-sm font-medium text-gray-700 mb-1"
             >
               Due Date
             </label>
@@ -263,14 +424,15 @@ const TaskForm = () => {
               name="dueDate"
               value={formData.dueDate}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              min={new Date().toISOString().split("T")[0]}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
           <div>
             <label
               htmlFor="tags"
-              className="block text-sm font-medium text-text-primary mb-1"
+              className="block text-sm font-medium text-gray-700 mb-1"
             >
               Tags (comma separated)
             </label>
@@ -280,7 +442,7 @@ const TaskForm = () => {
               name="tags"
               value={formData.tags}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="e.g. work, personal, urgent"
             />
           </div>
@@ -290,13 +452,13 @@ const TaskForm = () => {
           <button
             type="button"
             onClick={() => navigate("/tasks")}
-            className="px-4 py-2 border border-gray-300 rounded-md text-text-primary hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark"
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
           >
             {id ? "Update Task" : "Create Task"}
           </button>

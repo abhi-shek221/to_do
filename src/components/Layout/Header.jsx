@@ -29,7 +29,9 @@ const Header = () => {
           <h1 className="text-2xl font-bold text-primary-dark">
             {getPageTitle()}
           </h1>
-          <p className="text-sm text-gray-600 italic">{getRandomQuote()}</p>
+          <p className="text-sm text-gray-600 italic bg-gray-100 p-2 mt-2 rounded xl w-full">
+            {getRandomQuote()}
+          </p>
         </div>
 
         <div className="flex space-x-4">
