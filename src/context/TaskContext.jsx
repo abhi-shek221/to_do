@@ -70,6 +70,20 @@ const taskReducer = (state, action) => {
         tasks: state.tasks.filter((task) => task.id !== action.payload),
       };
 
+    case "UPDATE_TASK_STATUS":
+      return {
+        ...state,
+        tasks: state.tasks.map((task) =>
+          task.id === action.payload.id
+            ? {
+                ...task,
+                status: action.payload.status,
+                updatedAt: new Date().toISOString(),
+              }
+            : task
+        ),
+      };
+
     case "ADD_JOURNAL":
       return {
         ...state,
@@ -119,6 +133,35 @@ export const TaskProvider = ({ children }) => {
     localStorage.setItem("taskAppState", JSON.stringify(state));
   }, [state]);
 
+  // Helper functions for easier component usage
+  const addTask = (taskData) => {
+    dispatch({ type: "ADD_TASK", payload: taskData });
+  };
+
+  const updateTask = (id, taskData) => {
+    dispatch({ type: "UPDATE_TASK", payload: { id, ...taskData } });
+  };
+
+  const deleteTask = (id) => {
+    dispatch({ type: "DELETE_TASK", payload: id });
+  };
+
+  const updateTaskStatus = (id, status) => {
+    dispatch({ type: "UPDATE_TASK_STATUS", payload: { id, status } });
+  };
+
+  const addJournal = (journalData) => {
+    dispatch({ type: "ADD_JOURNAL", payload: journalData });
+  };
+
+  const updateJournal = (id, journalData) => {
+    dispatch({ type: "UPDATE_JOURNAL", payload: { id, ...journalData } });
+  };
+
+  const deleteJournal = (id) => {
+    dispatch({ type: "DELETE_JOURNAL", payload: id });
+  };
+
   // Get random motivational quote
   const getRandomQuote = () => {
     const randomIndex = Math.floor(
@@ -164,8 +207,22 @@ export const TaskProvider = ({ children }) => {
   return (
     <TaskContext.Provider
       value={{
+        // State
         tasks: state.tasks,
         journals: state.journals,
+
+        // Task functions
+        addTask,
+        updateTask,
+        deleteTask,
+        updateTaskStatus,
+
+        // Journal functions
+        addJournal,
+        updateJournal,
+        deleteJournal,
+
+        // Utility functions
         dispatch,
         getRandomQuote,
         getTaskStats,
