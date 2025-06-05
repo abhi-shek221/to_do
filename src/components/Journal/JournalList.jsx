@@ -46,9 +46,10 @@ const JournalList = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">My Journal</h2>
+        <h2 className="text-2xl font-bold ">My Journal</h2>
         <button
-          className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark shadow-button"
+          className="px-4 py-2 bg-primary text-black rounded-md hover:bg-primary-dark shadow-button border border-gray-400 shadow-lg opacity-80
+"
           onClick={() => navigate("/journal/add")}
         >
           New Entry

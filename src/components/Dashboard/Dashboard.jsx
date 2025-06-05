@@ -303,10 +303,11 @@ const Dashboard = () => {
       </div>
 
       {/* Monthly Task Overview */}
-      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100">
+      <div className="bg-gradient-to-r from-slate-300 to-yellow-100 rounded-lg shadow-md p-6 border border-gray-100">
         <h2 className="text-xl font-bold text-gray-900 mb-4">
           Monthly Task Overview
         </h2>
+
         {Object.keys(monthlyTasks).length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Object.entries(monthlyTasks)

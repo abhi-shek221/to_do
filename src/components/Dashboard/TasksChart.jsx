@@ -357,7 +357,7 @@ const TasksChart = () => {
   return (
     <div>
       {/* Chart Type Toggle */}
-      <div className="mb-4 flex justify-between items-center">
+      <div className="mb-4 flex justify-between items-center ">
         <div className="text-sm text-gray-600">
           Total Tasks: <span className="font-semibold">{taskCounts.total}</span>
         </div>

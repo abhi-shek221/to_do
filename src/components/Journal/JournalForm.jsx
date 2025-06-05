@@ -73,7 +73,7 @@ const JournalForm = () => {
   };
 
   return (
-    <div className="bg-background-paper rounded-lg shadow-card p-6">
+    <div className="bg-gradient-to-r from-gray-100 to-gray-300 rounded-lg shadow-card p-6">
       <h2 className="text-2xl font-bold mb-6">
         {isEditing ? "Edit Journal Entry" : "New Journal Entry"}
       </h2>
@@ -166,7 +166,7 @@ const JournalForm = () => {
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark shadow-button"
+            className="px-4 py-2 bg-primary text-black rounded-md hover:bg-primary-dark shadow-button border border-gray-400 shadow-lg opacity-100"
           >
             {isEditing ? "Update" : "Save"} Journal
           </button>

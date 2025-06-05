@@ -1,10 +1,12 @@
 import React, { useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import TaskContext from "../../context/TaskContext";
+import { useAuth } from "../../context/AuthContext";
 
 const Header = () => {
   const location = useLocation();
   const { getRandomQuote } = useContext(TaskContext);
+  const { user, logout } = useAuth();
 
   // Generate page title based on current route
   const getPageTitle = () => {
@@ -22,7 +24,10 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-gradient-to-l from-gray-400 via-gray-600 to-blue-300 border-b border-gray-200 shadow-sm">
+    <header
+      className="bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-orange-300 to-sky-300
+ border-b border-gray-200 shadow-sm "
+    >
       <div className="px-6 py-4">
         <div className="flex justify-between items-center">
           {/* Left side - Page title */}
@@ -58,6 +63,12 @@ const Header = () => {
                   New Journal
                 </Link>
               )}
+            <button
+              onClick={logout}
+              className="flex items-center px-4 py-2 bg-purple-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-sm"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>

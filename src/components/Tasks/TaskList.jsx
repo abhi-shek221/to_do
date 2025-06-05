@@ -93,7 +93,7 @@ const TaskList = () => {
   return (
     <div>
       {/* Tasks Header */}
-      <div className="flex flex-col sm:flex-row justify-between mb-6">
+      <div className="flex flex-col sm:flex-row justify-between mb-6 ">
         <h2 className="text-2xl font-bold mb-2 sm:mb-0">Your Tasks</h2>
         <Link
           to="/tasks/add"
@@ -118,7 +118,7 @@ const TaskList = () => {
       </div>
 
       {/* Task Statistics */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6 ">
         <div className="bg-background-paper rounded-lg shadow-card p-3 text-center">
           <p className="text-sm text-text-secondary">Total</p>
           <p className="text-xl font-bold">{stats.total}</p>

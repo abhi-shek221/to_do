@@ -5,7 +5,7 @@ const Sidebar = () => {
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  // Define navigation items (removed Statistics and Settings)
+  // Define navigation items
   const navItems = [
     {
       path: "/",
@@ -69,31 +69,36 @@ const Sidebar = () => {
     },
   ];
 
-  // Check if a path is active
+  // FIXED: Better isActive function
   const isActive = (path) => {
-    // Handle exact path match for root
-    if (path === "/" && location.pathname === "/") {
-      return true;
+    // Exact match for dashboard
+    if (path === "/") {
+      return location.pathname === "/";
     }
 
-    // For other paths, check if location pathname starts with the path
-    return path !== "/" && location.pathname.startsWith(path);
+    // For other paths, check if current path starts with the nav path
+    return location.pathname.startsWith(path);
   };
+
+  // Debug: Add console log to see current path
+  console.log("Current path:", location.pathname);
+  console.log("Sidebar collapsed:", isCollapsed);
 
   return (
     <div
-      className={`bg-gradient-to-r from-slate-500 to-yellow-100 border-r border-gray-100 shadow-lg transition-all duration-300 ease-in-out ${
-        isCollapsed ? "w-16" : "w-64"
-      } min-h-screen flex flex-col`}
+      className={`bg-gradient-to-b from-orange-300 to-sky-300 border-gray-200 shadow-lg transition-all duration-300 ease-in-out ${
+        isCollapsed ? "w-16" : "w-48"
+      } min-h-screen flex flex-col flex-shrink-0`}
+      // ADDED: flex-shrink-0 to prevent sidebar from shrinking
     >
       {/* Sidebar Header */}
-      <div className="h-20  flex items-center justify-between px-15 border-b bg-gradient-to-r from-slate-500 to-yellow-100">
+      <div className="h-20 flex items-center justify-between px-4 bg-gradient-to-t  from-orange-300 to-sky-300">
         {!isCollapsed && (
-          <div className="flex items-center space-x-5 mt-5">
-            <div className="w-10 h-8 ml-5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+          <div className="flex items-center space-x-3 m-5">
+            <div className="w-10 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5  text-white"
+                className="h-5 w-5 text-white"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -106,7 +111,7 @@ const Sidebar = () => {
                 />
               </svg>
             </div>
-            <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <h1 className="text-lg font-bold bg-gradient-to-r mt-5  from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Task Tracker
             </h1>
           </div>
@@ -177,11 +182,11 @@ const Sidebar = () => {
       </nav>
 
       {/* Sidebar Footer */}
-      <div className="p-10 border-t border-gray-100">
+      <div className="p-4 border-t border-gray-100">
         {!isCollapsed && (
           <div className="text-center">
-            <p className="text-s  text-gray-900 mb-2">Stay productive!</p>
-            <div className="bg-gradient-to-r w-35  from-green-100 to-blue-100 rounded-lg p-4 w-full">
+            <p className="text-sm text-gray-900 mb-2">Stay productive!</p>
+            <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-lg p-4 w-full">
               <p className="text-xs text-gray-900 font-medium">
                 ✨ Keep going strong
               </p>
