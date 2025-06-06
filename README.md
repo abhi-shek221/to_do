@@ -1,70 +1,118 @@
-# Getting Started with Create React App
+# Task Tracker Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Project Overview
+
+Task Tracker is a full-stack web application designed to help users manage their tasks and journals efficiently. It provides a user-friendly interface for creating, updating, and organizing tasks and journal entries, with real-time synchronization and secure user authentication.
+
+The application features a modern React frontend with protected routes, allowing users to sign up, log in, and access their personalized task and journal data. The backend is powered by an Express server integrated with Firebase Admin SDK for authentication and Firestore as the database, enabling real-time updates and seamless data management.
+
+## Features
+
+- User authentication with signup and login functionality.
+- Protected routes to secure user data.
+- Task management: create, update, delete, and list tasks.
+- Journal management: create, update, delete, and list journal entries.
+- Real-time synchronization of tasks and journals using Firebase Firestore.
+- Motivational quotes to inspire users.
+- Task statistics and progress tracking.
+- Responsive layout with header, sidebar, and footer components.
+- RESTful API backend with Express and Firebase Admin SDK.
+- CORS configuration and detailed logging for backend requests.
+
+## Technologies Used
+
+### Frontend
+
+- **React**: JavaScript library for building user interfaces.
+- **React Router DOM**: For client-side routing and navigation.
+- **React Toastify**: For toast notifications.
+- **React Speech Recognition**: For voice input capabilities.
+- **Chart.js & react-chartjs-2**: For rendering charts and visualizing task data.
+- **Tailwind CSS**: Utility-first CSS framework for styling.
+- **Axios**: Promise-based HTTP client for API requests.
+- **Date-fns**: Modern JavaScript date utility library.
+
+### Backend
+
+- **Node.js & Express.js**: Server-side JavaScript runtime and web framework.
+- **Firebase Admin SDK**: For server-side Firebase authentication and Firestore access.
+- **Firestore (Firebase Cloud Firestore)**: NoSQL cloud database for real-time data storage.
+- **Helmet**: Security middleware to set HTTP headers.
+- **CORS**: Middleware to enable Cross-Origin Resource Sharing.
+- **Morgan**: HTTP request logger middleware.
+- **Express Rate Limit**: Middleware to limit repeated requests to public APIs.
+
+### Development Tools
+
+- **Nodemon**: Utility that monitors for changes and automatically restarts the server.
+- **Dotenv**: Loads environment variables from a .env file.
+- **PostCSS & Autoprefixer**: For processing CSS with vendor prefixes.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js and npm installed
+- Firebase project with Firestore and Authentication enabled
+- Firebase Admin SDK service account key
+
+### Installation
+
+1. Clone the repository:
+   ```
+   git clone <repository-url>
+   cd task-tracker
+   ```
+
+2. Install frontend dependencies:
+   ```
+   npm install
+   ```
+
+3. Install backend dependencies:
+   ```
+   cd backend
+   npm install
+   ```
+
+4. Configure Firebase Admin SDK:
+   - Place your `firebase-admin-key.json` file in the `backend` directory.
+   - Create a `.env` file in the `backend` directory with your Firebase database URL:
+     ```
+     FIREBASE_DATABASE_URL=https://your-project-id.firebaseio.com
+     ```
+
+### Running the Application
+
+- Start the backend server:
+  ```
+  cd backend
+  npm start
+  ```
+
+- Start the frontend development server:
+  ```
+  npm start
+  ```
+
+- Open your browser and navigate to [http://localhost:3000](http://localhost:3000) to use the app.
 
 ## Available Scripts
 
 In the project directory, you can run:
 
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- `npm start` - Runs the app in development mode.
+- `npm test` - Launches the test runner.
+- `npm run build` - Builds the app for production.
+- `npm run eject` - Ejects the Create React App configuration.
 
 ## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- [React documentation](https://reactjs.org/)
+- [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started)
+- [Firebase documentation](https://firebase.google.com/docs)
+- [Express documentation](https://expressjs.com/)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## License
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This project is licensed under the MIT License.

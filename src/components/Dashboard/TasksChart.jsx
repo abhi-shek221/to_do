@@ -76,6 +76,7 @@ const TasksChart = () => {
     },
   };
 
+
   // Get last 7 days data with better error handling
   const barChartData = useMemo(() => {
     if (!tasks || tasks.length === 0) {
@@ -154,7 +155,7 @@ const TasksChart = () => {
         },
       ],
     };
-  }, [tasks]);
+  }, [tasks, colors.completed.bg, colors.completed.border, colors.inProgress.bg, colors.inProgress.border, colors.notStarted.bg, colors.notStarted.border, colors.paused.bg, colors.paused.border]);
 
   // Enhanced doughnut chart data
   const doughnutData = useMemo(() => {

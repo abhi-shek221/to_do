@@ -83,7 +83,7 @@ const MotivationCard = () => {
     const quoteInterval = setInterval(updateQuote, 30000);
 
     return () => clearInterval(quoteInterval);
-  }, [getRandomQuote]);
+  }, [getRandomQuote, getRandomQuoteFromFallback]);
 
   // Generate personalized motivation message based on task stats
   const getMotivationMessage = () => {

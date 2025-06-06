@@ -18,7 +18,6 @@ const firebaseConfig = {
   appId: "1:996720685244:web:20df91b44fa73eac6aa0b9",
   measurementId: "G-5NHFZH9YGB",
 };
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase Authentication and get a reference to the service
@@ -26,10 +25,14 @@ export const auth = getAuth(app);
 
 export const db = getFirestore(app);
 
-// Initialize Google Auth Provider
-enableNetwork(db).catch((error) => {
-  console.log("Error enabling network:", error);
-});
+// Enable network explicitly to ensure Firestore writes work
+enableNetwork(db)
+  .then(() => {
+    console.log("Firestore network enabled");
+  })
+  .catch((error) => {
+    console.error("Error enabling Firestore network:", error);
+  });
 
 // Google Auth Provider
 export const googleProvider = new GoogleAuthProvider();

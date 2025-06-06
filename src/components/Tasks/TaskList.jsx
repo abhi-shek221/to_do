@@ -2,6 +2,7 @@ import React, { useContext, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import TaskContext from "../../context/TaskContext";
 import TaskItem from "./TaskItem";
+import { isValidDate } from "../../utils/dateUtils";
 
 const TaskList = () => {
   const { tasks } = useContext(TaskContext);
@@ -9,9 +10,95 @@ const TaskList = () => {
   const [sort, setSort] = useState("newest");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Safe date comparison helper
+  const getDateTimeForComparison = (dateString) => {
+    if (!isValidDate(dateString)) {
+      return 0; // Return epoch time for invalid dates
+    }
+    return new Date(dateString).getTime();
+  };
+
+  // Validate and sanitize task data
+  const sanitizeTask = (task) => {
+    return {
+      ...task,
+      name:
+        task.name && task.name.trim() !== ""
+          ? task.name.trim()
+          : "Untitled Task",
+      description: task.description || "",
+      status: task.status || "not_started",
+      priority: task.priority || "medium",
+      tags: Array.isArray(task.tags) ? task.tags : [],
+      createdAt: task.createdAt || new Date().toISOString(),
+      updatedAt: task.updatedAt || task.createdAt || new Date().toISOString(),
+      progress: typeof task.progress === "number" ? task.progress : 0,
+    };
+  };
+
+  // Improved deduplication with better conflict resolution
+  const uniqueTasks = useMemo(() => {
+    if (!Array.isArray(tasks)) {
+      console.warn("Tasks is not an array:", tasks);
+      return [];
+    }
+
+    // Create a Map to remove duplicates based on ID
+    const taskMap = new Map();
+
+    console.log("Raw tasks:", tasks.length);
+
+    tasks.forEach((task, index) => {
+      if (!task || typeof task !== "object") {
+        console.warn(`Invalid task at index ${index}:`, task);
+        return;
+      }
+
+      if (!task.id) {
+        console.warn("Task without ID found:", task);
+        return;
+      }
+
+      // Sanitize task data before processing
+      const sanitizedTask = sanitizeTask(task);
+
+      if (taskMap.has(task.id)) {
+        const existing = taskMap.get(task.id);
+
+        // Better conflict resolution: prioritize the most recent updatedAt
+        const existingTime = getDateTimeForComparison(existing.updatedAt);
+        const newTime = getDateTimeForComparison(sanitizedTask.updatedAt);
+
+        // If times are equal, prefer the one with more complete data
+        if (
+          newTime > existingTime ||
+          (newTime === existingTime &&
+            sanitizedTask.name !== "Untitled Task" &&
+            existing.name === "Untitled Task")
+        ) {
+          taskMap.set(task.id, sanitizedTask);
+          console.log(`Updated task ${task.id} with newer version`);
+        } else {
+          console.log(`Kept existing version of task ${task.id}`);
+        }
+      } else {
+        taskMap.set(task.id, sanitizedTask);
+      }
+    });
+
+    const uniqueTasksArray = Array.from(taskMap.values());
+    console.log("Unique tasks:", uniqueTasksArray.length);
+
+    return uniqueTasksArray;
+  }, [tasks]);
+
   // Filter tasks based on selected filter and search query
   const filteredTasks = useMemo(() => {
-    let filtered = [...tasks];
+    let filtered = [...uniqueTasks];
+
+    console.log("Before filtering:", filtered.length);
+    console.log("Filter applied:", filter);
+    console.log("Search query:", searchQuery);
 
     // Apply status filter
     if (filter === "active") {
@@ -26,59 +113,99 @@ const TaskList = () => {
       filtered = filtered.filter((task) => task.status === "paused");
     }
 
-    // Apply search filter
+    console.log("After status filter:", filtered.length);
+
+    // Apply search filter with safe string handling
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (task) =>
-          task.name.toLowerCase().includes(query) ||
-          (task.description &&
-            task.description.toLowerCase().includes(query)) ||
-          (task.tags &&
-            task.tags.some((tag) => tag.toLowerCase().includes(query)))
-      );
+      const query = searchQuery.toLowerCase().trim();
+      if (query) {
+        const beforeSearchFilter = filtered.length;
+        filtered = filtered.filter(
+          (task) =>
+            (task.name && task.name.toLowerCase().includes(query)) ||
+            (task.description &&
+              task.description.toLowerCase().includes(query)) ||
+            (task.tags &&
+              Array.isArray(task.tags) &&
+              task.tags.some(
+                (tag) =>
+                  tag &&
+                  typeof tag === "string" &&
+                  tag.toLowerCase().includes(query)
+              ))
+        );
+        console.log(
+          `After search filter: ${filtered.length} (was ${beforeSearchFilter})`
+        );
+      }
     }
 
-    // Apply sorting
+    // Apply sorting with safe date handling
     filtered.sort((a, b) => {
-      if (sort === "newest") {
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      } else if (sort === "oldest") {
-        return new Date(a.createdAt) - new Date(b.createdAt);
-      } else if (sort === "name_asc") {
-        return a.name.localeCompare(b.name);
-      } else if (sort === "name_desc") {
-        return b.name.localeCompare(a.name);
-      } else if (sort === "priority_high") {
-        const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
-        return priorityOrder[b.priority] - priorityOrder[a.priority];
-      } else if (sort === "priority_low") {
-        const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
-        return priorityOrder[a.priority] - priorityOrder[b.priority];
-      } else if (sort === "due_date") {
-        if (!a.dueDate) return 1;
-        if (!b.dueDate) return -1;
-        return new Date(a.dueDate) - new Date(b.dueDate);
+      switch (sort) {
+        case "newest":
+          return (
+            getDateTimeForComparison(b.createdAt) -
+            getDateTimeForComparison(a.createdAt)
+          );
+        case "oldest":
+          return (
+            getDateTimeForComparison(a.createdAt) -
+            getDateTimeForComparison(b.createdAt)
+          );
+        case "name_asc":
+          return (a.name || "").localeCompare(b.name || "");
+        case "name_desc":
+          return (b.name || "").localeCompare(a.name || "");
+        case "priority_high": {
+          const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
+          return (
+            (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0)
+          );
+        }
+        case "priority_low": {
+          const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
+          return (
+            (priorityOrder[a.priority] || 0) - (priorityOrder[b.priority] || 0)
+          );
+        }
+        case "due_date": {
+          const aHasDueDate = isValidDate(a.dueDate);
+          const bHasDueDate = isValidDate(b.dueDate);
+
+          if (!aHasDueDate && !bHasDueDate) return 0;
+          if (!aHasDueDate) return 1;
+          if (!bHasDueDate) return -1;
+
+          return (
+            getDateTimeForComparison(a.dueDate) -
+            getDateTimeForComparison(b.dueDate)
+          );
+        }
+        default:
+          return 0;
       }
-      return 0;
     });
 
+    console.log("Final filtered tasks:", filtered.length);
     return filtered;
-  }, [tasks, filter, sort, searchQuery]);
+  }, [uniqueTasks, filter, sort, searchQuery]);
 
-  // Compute task statistics
+  // Compute task statistics using unique tasks
   const stats = useMemo(() => {
-    const total = tasks.length;
-    const completed = tasks.filter(
+    const total = uniqueTasks.length;
+    const completed = uniqueTasks.filter(
       (task) => task.status === "completed"
     ).length;
-    const inProgress = tasks.filter(
+    const inProgress = uniqueTasks.filter(
       (task) => task.status === "in_progress"
     ).length;
-    const notStarted = tasks.filter(
+    const notStarted = uniqueTasks.filter(
       (task) => task.status === "not_started"
     ).length;
-    const paused = tasks.filter((task) => task.status === "paused").length;
+    const paused = uniqueTasks.filter(
+      (task) => task.status === "paused"
+    ).length;
 
     return {
       total,
@@ -88,7 +215,7 @@ const TaskList = () => {
       paused,
       completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
     };
-  }, [tasks]);
+  }, [uniqueTasks]);
 
   return (
     <div>
@@ -97,7 +224,7 @@ const TaskList = () => {
         <h2 className="text-2xl font-bold mb-2 sm:mb-0">Your Tasks</h2>
         <Link
           to="/tasks/add"
-          className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark"
+          className="flex items-center px-4 py-2 bg-pink-500 text-white font-medium rounded-lg hover:bg-pink-600 transition-colors duration-200 shadow-sm"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -208,9 +335,22 @@ const TaskList = () => {
       {/* Task List */}
       {filteredTasks.length > 0 ? (
         <div className="grid grid-cols-1 gap-4">
-          {filteredTasks.map((task) => (
-            <TaskItem key={task.id} task={task} />
-          ))}
+          {filteredTasks.map((task) => {
+            // Ensure task has all required properties before rendering
+            if (!task.id) {
+              console.error(`Task has no ID:`, task);
+              return null;
+            }
+
+            return (
+              <div
+                key={task.id} // Use only task.id as the key
+                className="bg-background-paper rounded-lg shadow-card"
+              >
+                <TaskItem task={task} />
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="bg-background-paper rounded-lg shadow-card p-8 text-center">
@@ -225,7 +365,7 @@ const TaskList = () => {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002 2h2a2 2 0 002-2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012 2h2a2 2 0 012-2"
             />
           </svg>
           <h3 className="text-lg font-medium mb-2">No tasks found</h3>

@@ -7,7 +7,8 @@ import VoiceInput from "../VoiceInput/VoiceInput";
 const TaskForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { tasks, addTask, updateTask } = useContext(TaskContext);
+  const { tasks, addTask, updateTask, loading, error, clearError } =
+    useContext(TaskContext);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -21,6 +22,14 @@ const TaskForm = () => {
   const [errors, setErrors] = useState({});
   const [isUsingVoice, setIsUsingVoice] = useState(false);
   const [activeVoiceField, setActiveVoiceField] = useState("description");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Clear any existing errors when component mounts
+  useEffect(() => {
+    if (error) {
+      clearError();
+    }
+  }, [error, clearError]);
 
   // Load task data if editing
   useEffect(() => {
@@ -38,12 +47,12 @@ const TaskForm = () => {
             : "",
           tags: task.tags ? task.tags.join(", ") : "",
         });
-      } else {
-        // Task not found, redirect to tasks list
+      } else if (!loading) {
+        // Task not found and not loading, redirect to tasks list
         navigate("/tasks");
       }
     }
-  }, [id, tasks, navigate]);
+  }, [id, tasks, navigate, loading]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -170,12 +179,15 @@ const TaskForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
+
+    setIsSubmitting(true);
+    setErrors({}); // Clear any previous errors
 
     // Process tags from comma-separated string to array
     const tagsArray = formData.tags
@@ -198,18 +210,32 @@ const TaskForm = () => {
 
     try {
       if (id) {
-        updateTask(id, taskData);
+        await updateTask(id, taskData);
       } else {
-        addTask(taskData);
+        await addTask(taskData);
       }
 
-      // Redirect to tasks list
+      // Redirect to tasks list on success
       navigate("/tasks");
     } catch (error) {
       console.error("Error saving task:", error);
       setErrors({ submit: "Error saving task. Please try again." });
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  // Show loading spinner if data is loading
+  if (loading && id) {
+    return (
+      <div className="bg-white rounded-lg shadow-lg p-6 m-14 max-w-2xl mx-auto">
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <span className="ml-2">Loading task...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 m-14 max-w-2xl mx-auto">
@@ -217,6 +243,14 @@ const TaskForm = () => {
         {id ? "Edit Task" : "Add New Task"}
       </h2>
 
+      {/* Display global error from context */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
+
+      {/* Display form submission error */}
       {errors.submit && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
           <p className="text-sm text-red-600">{errors.submit}</p>
@@ -238,9 +272,12 @@ const TaskForm = () => {
               name="name"
               value={formData.name}
               onChange={handleChange}
+              disabled={isSubmitting}
               className={`w-full px-3 py-2 border ${
                 errors.name ? "border-red-500" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+              }`}
               placeholder="Enter task name"
               maxLength={100}
             />
@@ -250,7 +287,8 @@ const TaskForm = () => {
                 setActiveVoiceField("name");
                 setIsUsingVoice(!isUsingVoice);
               }}
-              className="absolute right-2 top-2 p-1 text-gray-400 hover:text-blue-500 transition-colors"
+              disabled={isSubmitting}
+              className="absolute right-2 top-2 p-1 text-gray-400 hover:text-blue-500 transition-colors disabled:cursor-not-allowed"
               title="Use voice input for task name"
             >
               <svg
@@ -289,10 +327,13 @@ const TaskForm = () => {
               name="description"
               value={formData.description}
               onChange={handleChange}
+              disabled={isSubmitting}
               rows={4}
               className={`w-full px-3 py-2 border ${
                 errors.description ? "border-red-500" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical`}
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical ${
+                isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+              }`}
               placeholder="Enter task description"
               maxLength={500}
             ></textarea>
@@ -303,7 +344,8 @@ const TaskForm = () => {
                 setActiveVoiceField("description");
                 setIsUsingVoice(!isUsingVoice);
               }}
-              className={`absolute bottom-2 right-2 p-2 rounded-full transition-all duration-200 ${
+              disabled={isSubmitting}
+              className={`absolute bottom-2 right-2 p-2 rounded-full transition-all duration-200 disabled:cursor-not-allowed ${
                 isUsingVoice && activeVoiceField === "description"
                   ? "bg-red-500 text-white"
                   : "bg-blue-500 hover:bg-blue-600 text-white"
@@ -334,7 +376,7 @@ const TaskForm = () => {
             {formData.description.length}/500 characters
           </p>
 
-          {isUsingVoice && (
+          {isUsingVoice && !isSubmitting && (
             <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-sm font-medium text-blue-800">
@@ -379,7 +421,10 @@ const TaskForm = () => {
               name="status"
               value={formData.status}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={isSubmitting}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+              }`}
             >
               <option value="not_started">Not Started</option>
               <option value="in_progress">In Progress</option>
@@ -400,7 +445,10 @@ const TaskForm = () => {
               name="priority"
               value={formData.priority}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={isSubmitting}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+              }`}
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -424,8 +472,11 @@ const TaskForm = () => {
               name="dueDate"
               value={formData.dueDate}
               onChange={handleChange}
+              disabled={isSubmitting}
               min={new Date().toISOString().split("T")[0]}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+              }`}
             />
           </div>
 
@@ -434,7 +485,7 @@ const TaskForm = () => {
               htmlFor="tags"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Tags (comma separated)
+              Tags
             </label>
             <input
               type="text"
@@ -442,25 +493,47 @@ const TaskForm = () => {
               name="tags"
               value={formData.tags}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="e.g. work, personal, urgent"
+              disabled={isSubmitting}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+              }`}
+              placeholder="Enter tags separated by commas"
             />
+            <p className="mt-1 text-xs text-gray-500">
+              Separate multiple tags with commas
+            </p>
           </div>
         </div>
 
-        <div className="flex justify-end space-x-3 mt-6">
+        <div className="flex gap-4 pt-6">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`flex-1 bg-blue-500 text-white py-2 px-4 rounded-md font-medium transition-colors ${
+              isSubmitting
+                ? "bg-blue-300 cursor-not-allowed"
+                : "hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            }`}
+          >
+            {isSubmitting ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                {id ? "Updating..." : "Adding..."}
+              </div>
+            ) : id ? (
+              "Update Task"
+            ) : (
+              "Add Task"
+            )}
+          </button>
+
           <button
             type="button"
             onClick={() => navigate("/tasks")}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+            disabled={isSubmitting}
+            className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md font-medium hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors disabled:cursor-not-allowed"
           >
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-          >
-            {id ? "Update Task" : "Create Task"}
           </button>
         </div>
       </form>

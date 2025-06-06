@@ -2,8 +2,13 @@
 
 # dependencies
 /node_modules
+/backend/node_modules
 /.pnp
 .pnp.js
+
+#keys
+/backend/firebase-admin-key.json
+/createFiles.js
 
 # testing
 /coverage

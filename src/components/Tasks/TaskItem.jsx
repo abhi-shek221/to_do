@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
-import { format, formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow, isValid } from "date-fns";
 import TaskContext from "../../context/TaskContext";
 
 const TaskItem = ({ task }) => {
@@ -52,6 +52,21 @@ const TaskItem = ({ task }) => {
       case "low":
       default:
         return "bg-green-100 text-green-800";
+    }
+  };
+
+  // Safe date formatting helper
+  const formatSafeDate = (dateValue, formatFn, fallback = "Unknown") => {
+    if (!dateValue) return fallback;
+
+    const date = new Date(dateValue);
+    if (!isValid(date)) return fallback;
+
+    try {
+      return formatFn(date);
+    } catch (error) {
+      console.warn("Date formatting error:", error, "for value:", dateValue);
+      return fallback;
     }
   };
 
@@ -166,7 +181,7 @@ const TaskItem = ({ task }) => {
             task.status
           )}`}
         >
-          {task.status.replace("_", " ")}
+          {task.status?.replace("_", " ") || "unknown"}
         </span>
 
         <span
@@ -174,12 +189,17 @@ const TaskItem = ({ task }) => {
             task.priority
           )}`}
         >
-          {task.priority}
+          {task.priority || "low"}
         </span>
 
         {task.dueDate && (
           <span className="px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">
-            Due: {format(new Date(task.dueDate), "MMM d, yyyy")}
+            Due:{" "}
+            {formatSafeDate(
+              task.dueDate,
+              (date) => format(date, "MMM d, yyyy"),
+              "Invalid date"
+            )}
           </span>
         )}
       </div>
@@ -202,12 +222,16 @@ const TaskItem = ({ task }) => {
       <div className="flex justify-between items-center text-xs text-text-secondary mt-2">
         <div>
           Created:{" "}
-          {formatDistanceToNow(new Date(task.createdAt), { addSuffix: true })}
+          {formatSafeDate(
+            task.createdAt,
+            (date) => formatDistanceToNow(date, { addSuffix: true }),
+            "Unknown"
+          )}
         </div>
 
         <div>
           <select
-            value={task.status}
+            value={task.status || "not_started"}
             onChange={handleStatusChange}
             className="text-xs border border-gray-300 rounded py-0.5 px-1"
           >
